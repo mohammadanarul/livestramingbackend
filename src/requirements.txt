@@ -1,0 +1,13 @@
+celery
+charset-normalizer
+Django
+django-cors-headers
+django-celery-beat
+django-celery-results
+django-redis
+gunicorn
+django-distill
+django-environ
+djangorestframework
+Pillow
+requests

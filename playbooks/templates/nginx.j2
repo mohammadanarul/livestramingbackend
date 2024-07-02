@@ -1,0 +1,17 @@
+server {
+    listen {{ host_port }};
+    server_name {{ ansible_host }} {{ domain }} www.{{ domain }};
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static/ {
+        alias {{ app_path }}/src/staticfiles/;
+    }
+    location /media/ {
+        alias {{ app_path }}/src/media/;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/run/gunicorn-{{ project_name }}.sock;
+    }
+}

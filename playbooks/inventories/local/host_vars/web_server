@@ -1,0 +1,11 @@
+---
+
+user: "{{ ansible_user }}"
+group: vagrant
+domain: cloudnextuk.co.uk
+host_port: 80
+admin_email: hossain258@gmail.com
+project_name: cloudnextuk
+app_path: "{{ ansible_env.HOME }}/{{ project_name }}"
+venv_path: "{{ app_path }}/venv"
+enable_ssl: True

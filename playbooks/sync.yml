@@ -1,0 +1,67 @@
+---
+
+- name: Sync codebase
+  hosts: all
+  tasks:
+    - name: Server and project information
+      debug:
+        msg:
+          - "IP address: {{ ansible_host }}"
+          - "Application path: {{ app_path }}"
+          - "Virtualenv path: {{ venv_path }}"
+
+    - name: Update apt cache
+      become: true
+      apt:
+        update_cache: yes
+        cache_valid_time: 86400
+
+    - name: Copy requirements.txt
+      copy:
+        src: ../requirements.txt
+        dest: "{{ app_path }}/requirements.txt"
+
+    - name: Install packages
+      pip:
+        requirements: "{{ app_path }}/requirements.txt"
+        virtualenv: "{{ venv_path }}"
+
+    - name: Sync codebase
+      synchronize:
+        src: ../src/
+        dest: "{{ app_path }}/src"
+        rsync_opts:
+          - "--exclude=__pycache__"
+          - "--exclude=media"
+          - "--exclude=db.sqlite3"
+
+    - name: Make manage.py executable
+      file:
+        path: "{{ app_path }}/src/manage.py"
+        mode: 0777
+
+    - name: Django collect static files
+      django_manage:
+        command: collectstatic
+        app_path: "{{ app_path }}/src"
+        virtualenv: "{{ venv_path }}"
+
+    - name: Django database migrations
+      django_manage:
+        command: makemigrations
+        app_path: "{{ app_path }}/src"
+        virtualenv: "{{ venv_path }}"
+
+    - name: Django migrate database
+      django_manage:
+        command: migrate
+        app_path: "{{ app_path }}/src"
+        virtualenv: "{{ venv_path }}"
+
+    - name: Daemon reload and restart gunicorn, nginx
+      become: True
+      shell: "{{ item }}"
+      loop:
+        - systemctl daemon-reload
+        - systemctl restart gunicorn-{{ project_name }}
+        - systemctl restart nginx
