@@ -1,7 +1,0 @@
-.idea/
-.venv
-venv
-.env
-migrations/
-__pycache__/
-**/__pycache__/
